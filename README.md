@@ -8,7 +8,7 @@ Subtitle Downloader   /   C#  /
 
 Execute:
 
-> dotnet SubtitleDownloadCore.dll
+> dotnet SubtitleDownloadCore.dll [path-to-movies-directory]
 
 
 Then it will try to download the subtitles for all the movie files it finds in the subdirectories.

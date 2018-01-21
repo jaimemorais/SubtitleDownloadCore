@@ -18,12 +18,15 @@ namespace SubtitleDownloadCore
 
         public static async Task Main(string[] args)
         {
+            string customDir = (args.Any() && !string.IsNullOrEmpty(args[0])) ? args[0] : null;
+            string rootDir = customDir ?? System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+
             Console.WriteLine(string.Empty);
             Console.WriteLine("SubtitleDownloadCore starting...");
             Console.WriteLine(string.Empty);
 
 
-            var movieFiles = GetMovieFiles();
+            var movieFiles = GetMovieFiles(rootDir);
 
             if (!movieFiles.Any())
             {
@@ -42,14 +45,16 @@ namespace SubtitleDownloadCore
             Console.WriteLine("SubtitleDownloadCore Finished!");
         }
 
-        private static List<string> GetMovieFiles()
+        private static List<string> GetMovieFiles(string rootDir)
         {
+            Console.WriteLine("Movies Directory : " + rootDir);
+            Console.WriteLine(string.Empty);
+
             List<string> files = new List<string>();
 
             string[] extensions = { ".avi", ".mpg", ".mp4" };
-
-            string currDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
-            foreach (string file in Directory.EnumerateFiles(currDir, "*.*", SearchOption.AllDirectories)
+                        
+            foreach (string file in Directory.EnumerateFiles(rootDir, "*.*", SearchOption.AllDirectories)
                 .Where(s => extensions.Any(ext => ext == Path.GetExtension(s))))
             {
                 files.Add(file);

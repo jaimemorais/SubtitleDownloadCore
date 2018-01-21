@@ -23,7 +23,7 @@ namespace SubtitleDownloadCore
             
             using (HttpClient httpClient = new HttpClient())
             {
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (JaimeSubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (sSubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
                 
                 string urlSearch = $"http://api.thesubdb.com/?action=search&hash={hash}&language=en";
 

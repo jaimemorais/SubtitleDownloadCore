@@ -85,8 +85,19 @@ namespace SubtitleDownloadCore
 
                     if (!string.IsNullOrEmpty(languagesFound))
                     {
-                        Console.WriteLine("Subtitle found (languages = " + languagesFound + ") ! Downloading...");
-                        await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, languagesFound);                        
+                        Console.WriteLine("Subtitle found (languages = " + languagesFound + ") !");
+
+                        if (languagesFound.Contains("en"))
+                        {
+                            Console.WriteLine("Downloading 'en' ... ");
+                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, "en");
+                        }
+                        else if (languagesFound.Contains("pt"))
+                        {
+                            Console.WriteLine("Downloading 'pt' ... ");
+                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, "pt");
+                        }
+
                         return;
                     }
                 }
@@ -96,9 +107,9 @@ namespace SubtitleDownloadCore
         }
 
 
-        private static async Task DownloadSubtitleAsync(string subdbApiFileHash, string dir, string fileName, HttpClient httpClient, string languages)
+        private static async Task DownloadSubtitleAsync(string subdbApiFileHash, string dir, string fileName, HttpClient httpClient, string language)
         {
-            string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language="+languages;
+            string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language="+language;
             HttpResponseMessage downloadResponse = await httpClient.GetAsync(urlDownload);
 
             if (downloadResponse.IsSuccessStatusCode)

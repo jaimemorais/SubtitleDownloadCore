@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -16,38 +17,84 @@ namespace SubtitleDownloadCore
     {
 
         public static async Task Main(string[] args)
-        {
+        {               
+            var files = new List<string>();
+            string[] extensions = { ".avi", ".mpg", ".mp4" };
+
+            string currDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
+            foreach (string file in Directory.EnumerateFiles(currDir, "*.*", SearchOption.AllDirectories)
+                .Where(s => extensions.Any(ext => ext == Path.GetExtension(s))))
+            {
+                files.Add(file);                
+            }
                         
-            string subdbApiFileHash = GetHash(@"C:\teste\dexter.mp4");
+            foreach (var file in files)
+            {
+                await TryDownloadAsync(file);
+                Console.WriteLine(string.Empty);
+            }
+
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("Finished!");
+        }
 
 
+        private static async Task TryDownloadAsync(string filePath)
+        {
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("Searching subtitle for " + filePath + " , wait...");
+            
+            string subdbApiFileHash = GetHash(filePath);
 
+            string dir = Path.GetDirectoryName(filePath);
+            string fileName = Path.GetFileNameWithoutExtension(filePath);            
             
             using (HttpClient httpClient = new HttpClient())
             {
                 httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (SubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
-                
-                string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}&language=en";
+
+                string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
 
                 HttpResponseMessage searchResponse = await httpClient.GetAsync(urlSearch);
 
                 if (searchResponse.IsSuccessStatusCode)
                 {
-                    // subtitle found, so we download it
+                    string languagesFound = await searchResponse.Content.ReadAsStringAsync();
 
-                    string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language=en";
-                    HttpResponseMessage downloadResponse = await httpClient.GetAsync(urlDownload);
+                    if (!string.IsNullOrEmpty(languagesFound))
+                    {
+                        Console.WriteLine("Subtitle found (languages = " + languagesFound + ") ! Downloading...");
 
-                    HttpContent httpContent = downloadResponse.Content;
-                    await WriteHttpContentToFile(httpContent, @"C:\teste\dexter.srt", true);
-
+                        await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, languagesFound);
+                        
+                        return;
+                    }
                 }
-            }
                 
-
+                Console.WriteLine("Subtitle not found :( ");                
+            }
         }
 
-        
+        private static async Task DownloadSubtitleAsync(string subdbApiFileHash, string dir, string fileName, HttpClient httpClient, string languages)
+        {
+            string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language="+languages;
+            HttpResponseMessage downloadResponse = await httpClient.GetAsync(urlDownload);
+
+            if (downloadResponse.IsSuccessStatusCode)
+            {
+                HttpContent httpContent = downloadResponse.Content;
+                var subTitlePath = dir + "\\" + fileName + ".srt";
+                await WriteHttpContentToFile(httpContent, subTitlePath, true);
+
+                Console.WriteLine("Subtitle downloaded -> " + subTitlePath);
+            }
+            else
+            {
+                Console.WriteLine("Failed to download. " + downloadResponse.StatusCode);
+            }
+        }
+
+
         private static Task WriteHttpContentToFile(HttpContent content, string filename, bool overwrite)
         {
             string pathname = Path.GetFullPath(filename);

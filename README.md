@@ -6,13 +6,11 @@ Subtitle Downloader   /   C#  /
 
 ### To Run 
 
-Publish and copy the Release\PublishOutput files to your movies directory
-
-
 Execute:
 
 > dotnet SubtitleDownloadCore.dll
 
 
+Then it will try to download the subtitles for all the movie files it finds in the subdirectories.
 
 

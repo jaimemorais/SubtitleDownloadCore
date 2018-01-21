@@ -4,3 +4,6 @@
 
 /obj
 /bin/Debug/netcoreapp2.0
+/bin/Release
+/Properties/PublishProfiles/FolderProfile.pubxml.user
+/SubtitleDownloadCore.csproj.user

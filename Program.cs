@@ -7,25 +7,27 @@ using System.Threading.Tasks;
 
 namespace SubtitleDownloadCore
 {
+
+    /// <summary>
+    /// Subtitle Downloader 
+    /// Using http://thesubdb.com/api/
+    /// </summary>
     public class Program
     {
 
         public static async Task Main(string[] args)
         {
-            // Using http://thesubdb.com/api/
-
-
-            string path = @"C:\teste\dexter.mp4";
-            string hash = GetHash(path);
+                        
+            string subdbApiFileHash = GetHash(@"C:\teste\dexter.mp4");
 
 
 
             
             using (HttpClient httpClient = new HttpClient())
             {
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (sSubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (SubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
                 
-                string urlSearch = $"http://api.thesubdb.com/?action=search&hash={hash}&language=en";
+                string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}&language=en";
 
                 HttpResponseMessage searchResponse = await httpClient.GetAsync(urlSearch);
 
@@ -33,7 +35,7 @@ namespace SubtitleDownloadCore
                 {
                     // subtitle found, so we download it
 
-                    string urlDownload = $"http://api.thesubdb.com/?action=download&hash={hash}&language=en";
+                    string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language=en";
                     HttpResponseMessage downloadResponse = await httpClient.GetAsync(urlDownload);
 
                     HttpContent httpContent = downloadResponse.Content;

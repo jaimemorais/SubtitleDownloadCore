@@ -17,29 +17,48 @@ namespace SubtitleDownloadCore
     {
 
         public static async Task Main(string[] args)
-        {               
-            var files = new List<string>();
+        {
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("SubtitleDownloadCore starting...");
+            Console.WriteLine(string.Empty);
+
+
+            var movieFiles = GetMovieFiles();
+
+            if (!movieFiles.Any())
+            {
+                Console.WriteLine("No movie files found.");
+            }
+            else
+            {
+                foreach (var movieFilePath in movieFiles)
+                {
+                    await SearchAndDownloadSubtitleAsync(movieFilePath);
+                }
+            }
+            
+
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("SubtitleDownloadCore Finished!");
+        }
+
+        private static List<string> GetMovieFiles()
+        {
+            List<string> files = new List<string>();
+
             string[] extensions = { ".avi", ".mpg", ".mp4" };
 
             string currDir = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetEntryAssembly().Location);
             foreach (string file in Directory.EnumerateFiles(currDir, "*.*", SearchOption.AllDirectories)
                 .Where(s => extensions.Any(ext => ext == Path.GetExtension(s))))
             {
-                files.Add(file);                
-            }
-                        
-            foreach (var file in files)
-            {
-                await TryDownloadAsync(file);
-                Console.WriteLine(string.Empty);
+                files.Add(file);
             }
 
-            Console.WriteLine(string.Empty);
-            Console.WriteLine("Finished!");
+            return files;
         }
 
-
-        private static async Task TryDownloadAsync(string filePath)
+        private static async Task SearchAndDownloadSubtitleAsync(string filePath)
         {
             Console.WriteLine(string.Empty);
             Console.WriteLine("Searching subtitle for " + filePath + " , wait...");

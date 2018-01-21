@@ -44,17 +44,15 @@ namespace SubtitleDownloadCore
             Console.WriteLine(string.Empty);
             Console.WriteLine("Searching subtitle for " + filePath + " , wait...");
             
-            string subdbApiFileHash = GetHash(filePath);
-
             string dir = Path.GetDirectoryName(filePath);
             string fileName = Path.GetFileNameWithoutExtension(filePath);            
             
             using (HttpClient httpClient = new HttpClient())
             {
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (SubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
-
+                string subdbApiFileHash = GetSubdbFileHash(filePath);
                 string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
 
+                httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (SubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
                 HttpResponseMessage searchResponse = await httpClient.GetAsync(urlSearch);
 
                 if (searchResponse.IsSuccessStatusCode)
@@ -64,9 +62,7 @@ namespace SubtitleDownloadCore
                     if (!string.IsNullOrEmpty(languagesFound))
                     {
                         Console.WriteLine("Subtitle found (languages = " + languagesFound + ") ! Downloading...");
-
-                        await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, languagesFound);
-                        
+                        await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, languagesFound);                        
                         return;
                     }
                 }
@@ -74,6 +70,7 @@ namespace SubtitleDownloadCore
                 Console.WriteLine("Subtitle not found :( ");                
             }
         }
+
 
         private static async Task DownloadSubtitleAsync(string subdbApiFileHash, string dir, string fileName, HttpClient httpClient, string languages)
         {
@@ -84,7 +81,7 @@ namespace SubtitleDownloadCore
             {
                 HttpContent httpContent = downloadResponse.Content;
                 var subTitlePath = dir + "\\" + fileName + ".srt";
-                await WriteHttpContentToFile(httpContent, subTitlePath, true);
+                await WriteHttpContentToFile(httpContent, subTitlePath);
 
                 Console.WriteLine("Subtitle downloaded -> " + subTitlePath);
             }
@@ -93,15 +90,11 @@ namespace SubtitleDownloadCore
                 Console.WriteLine("Failed to download. " + downloadResponse.StatusCode);
             }
         }
+        
 
-
-        private static Task WriteHttpContentToFile(HttpContent content, string filename, bool overwrite)
+        private static Task WriteHttpContentToFile(HttpContent content, string filename)
         {
             string pathname = Path.GetFullPath(filename);
-            if (!overwrite && File.Exists(filename))
-            {
-                throw new InvalidOperationException(string.Format("File {0} already exists.", pathname));
-            }
  
             FileStream fileStream = null;
             try
@@ -125,7 +118,6 @@ namespace SubtitleDownloadCore
         }
         
 
-
         public static byte[] StreamToByteArray(Stream input)
         {
             byte[] buffer = new byte[16 * 1024];
@@ -140,7 +132,8 @@ namespace SubtitleDownloadCore
             }
         }
 
-        private static string GetHash(string filePath)
+
+        private static string GetSubdbFileHash(string filePath)
         {
             using (var md5 = MD5.Create())
             {
@@ -155,7 +148,6 @@ namespace SubtitleDownloadCore
                     var hash = md5.ComputeHash(concatBytes);
 
                     return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-
                }
             }
         }

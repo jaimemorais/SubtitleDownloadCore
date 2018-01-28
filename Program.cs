@@ -15,6 +15,8 @@ namespace SubtitleDownloadCore
     /// </summary>
     public class Program
     {
+        const string LANGUAGE_EN = "en";
+        const string LANGUAGE_PT = "pt";
 
         public static async Task Main(string[] args)
         {
@@ -52,10 +54,10 @@ namespace SubtitleDownloadCore
 
             List<string> files = new List<string>();
 
-            string[] extensions = { ".avi", ".mpg", ".mp4" };
+            string[] fileExtensions = { ".avi", ".mpg", ".mp4" };
                         
             foreach (string file in Directory.EnumerateFiles(rootDir, "*.*", SearchOption.AllDirectories)
-                .Where(s => extensions.Any(ext => ext == Path.GetExtension(s))))
+                .Where(s => fileExtensions.Any(ext => ext == Path.GetExtension(s))))
             {
                 files.Add(file);
             }
@@ -88,15 +90,16 @@ namespace SubtitleDownloadCore
                     {
                         Console.WriteLine("Subtitle found (languages = " + languagesFound + ") !");
 
-                        if (languagesFound.Contains("en"))
+                        if (languagesFound.Contains(LANGUAGE_EN))
                         {
-                            Console.WriteLine("Downloading 'en' ... ");
-                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, "en");
+                            Console.WriteLine($"Downloading '{LANGUAGE_EN}' ... ");
+                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, LANGUAGE_EN);
                         }
-                        else if (languagesFound.Contains("pt"))
+
+                        if (languagesFound.Contains(LANGUAGE_PT))
                         {
-                            Console.WriteLine("Downloading 'pt' ... ");
-                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, "pt");
+                            Console.WriteLine($"Downloading '{LANGUAGE_PT}' ... ");
+                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, LANGUAGE_PT);
                         }
 
                         return;
@@ -116,10 +119,16 @@ namespace SubtitleDownloadCore
             if (downloadResponse.IsSuccessStatusCode)
             {
                 HttpContent httpContent = downloadResponse.Content;
-                var subTitlePath = dir + "\\" + fileName + ".srt";
-                await WriteHttpContentToFile(httpContent, subTitlePath);
+                var subtitleFilePath = dir + "\\" + fileName + ".srt";
 
-                Console.WriteLine("Subtitle downloaded -> " + subTitlePath);
+                if (language.Equals(LANGUAGE_PT) && File.Exists(subtitleFilePath))
+                {
+                    subtitleFilePath = subtitleFilePath.Replace(".srt", "-pt.srt");
+                }
+
+                await WriteHttpContentToFile(httpContent, subtitleFilePath);
+
+                Console.WriteLine("Subtitle downloaded -> " + subtitleFilePath);
             }
             else
             {

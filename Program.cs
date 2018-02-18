@@ -68,10 +68,18 @@ namespace SubtitleDownloadCore
         private static async Task SearchAndDownloadSubtitleAsync(string filePath)
         {
             Console.WriteLine(string.Empty);
-            Console.WriteLine("Searching subtitle for " + filePath + " , wait...");
-            
+
             string dir = Path.GetDirectoryName(filePath);
-            string fileName = Path.GetFileNameWithoutExtension(filePath);            
+            string fileName = Path.GetFileNameWithoutExtension(filePath);
+
+            if (Directory.GetFiles(dir, "*.srt").Length > 0)
+            {
+                Console.WriteLine($"Subtitles already downloaded for {fileName}. Manually delete the .srt files to download again.");
+                return;
+            }
+
+                        
+            Console.WriteLine("Searching subtitle for " + filePath + " , wait...");
             
             using (HttpClient httpClient = new HttpClient())
             {

@@ -11,7 +11,7 @@ namespace SubtitleDownloadCore
 
     /// <summary>
     /// Subtitle Downloader 
-    /// Using http://thesubdb.com/api/
+    /// Using http://thesubdb.com/api/ 
     /// </summary>
     public class Program
     {

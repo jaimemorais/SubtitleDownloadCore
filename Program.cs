@@ -54,7 +54,7 @@ namespace SubtitleDownloadCore
 
             List<string> files = new List<string>();
 
-            string[] fileExtensions = { ".avi", ".mpg", ".mp4" };
+            string[] fileExtensions = { ".avi", ".mpg", ".mp4", ".mkv" };
                         
             foreach (string file in Directory.EnumerateFiles(rootDir, "*.*", SearchOption.AllDirectories)
                 .Where(s => fileExtensions.Any(ext => ext == Path.GetExtension(s))))

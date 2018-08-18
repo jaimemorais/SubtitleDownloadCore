@@ -72,7 +72,7 @@ namespace SubtitleDownloadCore
             string dir = Path.GetDirectoryName(filePath);
             string fileName = Path.GetFileNameWithoutExtension(filePath);
 
-            if (Directory.GetFiles(dir, "*.srt").Length > 0)
+            if (File.Exists(Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath)) + ".srt"))
             {
                 Console.WriteLine($"Subtitles already downloaded for {fileName}. Manually delete the .srt files to download again.");
                 return;
@@ -145,14 +145,17 @@ namespace SubtitleDownloadCore
         }
         
 
-        private static Task WriteHttpContentToFile(HttpContent content, string filename)
+        private static Task WriteHttpContentToFile(HttpContent content, string srtFileName)
         {
-            string pathname = Path.GetFullPath(filename);
- 
+            string subtitleFilePath = Path.GetFullPath(srtFileName);
+
+            if (File.Exists(subtitleFilePath))
+                File.Delete(subtitleFilePath);
+
             FileStream fileStream = null;
             try
             {
-                fileStream = new FileStream(pathname, FileMode.Create, FileAccess.Write, FileShare.None);
+                fileStream = new FileStream(subtitleFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
                 return content.CopyToAsync(fileStream).ContinueWith(
                     (copyTask) =>
                     {

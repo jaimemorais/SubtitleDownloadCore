@@ -14,8 +14,10 @@ namespace SubtitleDownloadCore
     /// </summary>
     public class Program
     {
+
         const string LANGUAGE_EN = "en";
         const string LANGUAGE_PT = "pt";
+
 
         public static async Task Main(string[] args)
         {
@@ -37,7 +39,16 @@ namespace SubtitleDownloadCore
             {
                 foreach (var movieFilePath in movieFiles)
                 {
-                    await SearchAndDownloadSubtitleAsync(movieFilePath);
+                    Console.WriteLine(string.Empty);
+
+                    string srtFilePath = Path.Combine(Path.GetDirectoryName(movieFilePath), Path.GetFileNameWithoutExtension(movieFilePath)) + ".srt";
+                    if (File.Exists(srtFilePath))
+                    {
+                        Console.WriteLine($"Subtitles already downloaded for {Path.GetFileNameWithoutExtension(movieFilePath)}. Manually delete the .srt files to download again.");
+                        continue;
+                    }
+
+                    await SearchSubtitleAsync(movieFilePath, srtFilePath);
                 }
             }
             
@@ -45,6 +56,7 @@ namespace SubtitleDownloadCore
             Console.WriteLine(string.Empty);
             Console.WriteLine("SubtitleDownloadCore Finished!");
         }
+
 
         private static List<string> GetMovieFiles(string rootDir)
         {
@@ -64,25 +76,14 @@ namespace SubtitleDownloadCore
             return files;
         }
 
-        private static async Task SearchAndDownloadSubtitleAsync(string filePath)
+
+        private static async Task SearchSubtitleAsync(string movieFilePath, string srtFilePath)
         {
-            Console.WriteLine(string.Empty);
-
-            string dir = Path.GetDirectoryName(filePath);
-            string fileName = Path.GetFileNameWithoutExtension(filePath);
-
-            if (File.Exists(Path.Combine(Path.GetDirectoryName(filePath), Path.GetFileNameWithoutExtension(filePath)) + ".srt"))
-            {
-                Console.WriteLine($"Subtitles already downloaded for {fileName}. Manually delete the .srt files to download again.");
-                return;
-            }
-
-                        
-            Console.WriteLine("Searching subtitle for " + filePath + " , wait...");
+            Console.WriteLine($"Searching subtitle for {Path.GetFileNameWithoutExtension(movieFilePath)} , wait...");
             
             using (HttpClient httpClient = new HttpClient())
             {
-                string subdbApiFileHash = FileHashUtil.GetSubdbFileHash(filePath);
+                string subdbApiFileHash = FileHashUtil.GetSubdbFileHash(movieFilePath);
 
                 string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
 
@@ -92,33 +93,43 @@ namespace SubtitleDownloadCore
                 if (searchResponse.IsSuccessStatusCode)
                 {
                     string languagesFound = await searchResponse.Content.ReadAsStringAsync();
-
-                    if (!string.IsNullOrEmpty(languagesFound))
-                    {
-                        Console.WriteLine("Subtitle found (languages = " + languagesFound + ") !");
-
-                        if (languagesFound.Contains(LANGUAGE_EN))
-                        {
-                            Console.WriteLine($"Downloading '{LANGUAGE_EN}' ... ");
-                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, LANGUAGE_EN);
-                        }
-
-                        if (languagesFound.Contains(LANGUAGE_PT))
-                        {
-                            Console.WriteLine($"Downloading '{LANGUAGE_PT}' ... ");
-                            await DownloadSubtitleAsync(subdbApiFileHash, dir, fileName, httpClient, LANGUAGE_PT);
-                        }
-
-                        return;
-                    }
+                    await TryDownloadSubs(srtFilePath, httpClient, subdbApiFileHash, languagesFound);
                 }
-                
-                Console.WriteLine("Subtitle not found :( ");                
+                else 
+                {
+                    Console.WriteLine($"Search failed. {searchResponse.StatusCode}");                    
+                }
             }
         }
 
 
-        private static async Task DownloadSubtitleAsync(string subdbApiFileHash, string dir, string fileName, HttpClient httpClient, string language)
+        private static async Task TryDownloadSubs(string srtFilePath, HttpClient httpClient, string subdbApiFileHash, string languagesFound)
+        {   
+            if (!string.IsNullOrEmpty(languagesFound))
+            {
+                Console.WriteLine("Subtitle(s) found (languages = " + languagesFound + ") !");
+
+                if (languagesFound.Contains(LANGUAGE_EN))
+                {
+                    Console.WriteLine($"Downloading '{LANGUAGE_EN}' ... ");                    
+                    await DownloadSubtitleAsync(subdbApiFileHash, srtFilePath, httpClient, LANGUAGE_EN);
+                }
+
+                if (languagesFound.Contains(LANGUAGE_PT))
+                {
+                    Console.WriteLine($"Downloading '{LANGUAGE_PT}' ... ");
+                    await DownloadSubtitleAsync(subdbApiFileHash, srtFilePath, httpClient, LANGUAGE_PT);
+                }
+            }
+            else
+            {
+                Console.WriteLine($"Subtitles for languages '{LANGUAGE_EN}','{LANGUAGE_PT}' not found :( ");
+            }
+        }
+
+
+
+        private static async Task DownloadSubtitleAsync(string subdbApiFileHash, string srtFilePath, HttpClient httpClient, string language)
         {
             string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language="+language;
             HttpResponseMessage downloadResponse = await httpClient.GetAsync(urlDownload);
@@ -126,7 +137,7 @@ namespace SubtitleDownloadCore
             if (downloadResponse.IsSuccessStatusCode)
             {
                 HttpContent httpContent = downloadResponse.Content;
-                var subtitleFilePath = dir + "\\" + fileName + ".srt";
+                var subtitleFilePath = srtFilePath;
 
                 if (language.Equals(LANGUAGE_PT) && File.Exists(subtitleFilePath))
                 {

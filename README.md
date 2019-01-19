@@ -1,6 +1,5 @@
 # SubtitleDownloadCore
-Subtitle Downloader   /   C#  /
-.Net Core
+Subtitle Downloader   /   C#  /   .Net Core  / xUnit
 
 ---
 

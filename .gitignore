@@ -2,11 +2,12 @@
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
-/obj
-/bin/Debug/netcoreapp2.0
-/bin/Release
-/Properties/PublishProfiles/FolderProfile.pubxml.user
-/SubtitleDownloadCore.csproj.user
 /.vs/SubtitleDownloadCore/v15/.suo
 /.vs/SubtitleDownloadCore/v15/sqlite3/storage.ide
 /.vs/SubtitleDownloadCore/v15
+/.vs/config
+/SubtitleDownloadCore/obj
+/SubtitleDownloadCore/Properties/PublishProfiles/FolderProfile.pubxml.user
+/SubtitleDownloadCore.Tests/bin/Debug/netcoreapp2.1
+/SubtitleDownloadCore.Tests/obj
+/SubtitleDownloadCore/bin/Debug/netcoreapp2.0

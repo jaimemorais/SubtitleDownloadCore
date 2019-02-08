@@ -12,7 +12,7 @@ namespace SubtitleDownloadCore
     /// Subtitle Downloader 
     /// Using http://thesubdb.com/api/ 
     /// </summary>
-    public class Program
+    public static class Program
     {
 
         const string LANGUAGE_EN = "en";

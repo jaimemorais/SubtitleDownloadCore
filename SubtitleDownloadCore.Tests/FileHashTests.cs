@@ -4,7 +4,7 @@ using Xunit;
 
 namespace SubtitleDownloadCore.Tests
 {
-    public class FileHashTests : IDisposable
+    public sealed class FileHashTests : IDisposable
     {
 
         private readonly string TestFilePath;
@@ -19,13 +19,12 @@ namespace SubtitleDownloadCore.Tests
 
         public void Dispose()
         {
-            File.Delete(TestFilePath);
+            File.Delete(TestFilePath);            
         }
 
 
-
         [Fact]
-        public void CorrectFileHash()
+        public void CorrectFileHashTest()
         {
             string correctHash = "81615449a98aaaad8dc179b3bec87f38";
 

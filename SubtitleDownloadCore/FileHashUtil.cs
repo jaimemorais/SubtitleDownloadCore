@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 namespace SubtitleDownloadCore
 {
-    public class FileHashUtil
+    public static class FileHashUtil
     {
         private static readonly object fsLock = new object();
 

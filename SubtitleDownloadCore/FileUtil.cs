@@ -1,11 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace SubtitleDownloadCore
 {
-    public static class FileHashUtil
+    public static class FileUtil
     {
         private static readonly object fsLock = new object();
 
@@ -35,7 +37,38 @@ namespace SubtitleDownloadCore
                 var hash = md5.ComputeHash(concatBytes);
                 return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
             }
-
         }
+
+
+
+        public static Task WriteHttpContentToFileAsync(HttpContent content, string srtFileName)
+        {
+            string subtitleFilePath = Path.GetFullPath(srtFileName);
+
+            if (File.Exists(subtitleFilePath))
+                File.Delete(subtitleFilePath);
+
+            FileStream fileStream = null;
+            try
+            {
+                fileStream = new FileStream(subtitleFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                return content.CopyToAsync(fileStream).ContinueWith(
+                    (copyTask) =>
+                    {
+                        fileStream.Close();
+                    });
+            }
+            catch
+            {
+                if (fileStream != null)
+                {
+                    fileStream.Close();
+                }
+
+                throw;
+            }
+        }
+
+
     }
 }

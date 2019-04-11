@@ -19,16 +19,16 @@ namespace SubtitleDownloadCore.Tests
 
         public void Dispose()
         {
-            File.Delete(TestFilePath);            
+            File.Delete(TestFilePath);
         }
 
 
         [Fact]
-        public void CorrectFileHashTest()
+        public void CorrectFileHash()
         {
             string correctHash = "81615449a98aaaad8dc179b3bec87f38";
 
-            string hash = FileHashUtil.GetSubdbFileHash(TestFilePath);
+            string hash = FileUtil.GetSubdbFileHash(TestFilePath);
 
             Assert.Equal(hash, correctHash);
         }

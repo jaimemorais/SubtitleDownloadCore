@@ -51,7 +51,7 @@ namespace SubtitleDownloadCore
                     await SearchSubtitleAsync(movieFilePath, srtFilePath);
                 }
             }
-            
+
 
             Console.WriteLine(string.Empty);
             Console.WriteLine("SubtitleDownloadCore Finished!");
@@ -66,7 +66,7 @@ namespace SubtitleDownloadCore
             List<string> files = new List<string>();
 
             string[] fileExtensions = { ".avi", ".mpg", ".mp4", ".mkv" };
-                        
+
             foreach (string file in Directory.EnumerateFiles(rootDir, "*.*", SearchOption.AllDirectories)
                 .Where(s => fileExtensions.Any(ext => ext == Path.GetExtension(s))))
             {
@@ -80,10 +80,10 @@ namespace SubtitleDownloadCore
         private static async Task SearchSubtitleAsync(string movieFilePath, string srtFilePath)
         {
             Console.WriteLine($"Searching subtitle for {Path.GetFileNameWithoutExtension(movieFilePath)} , wait...");
-            
+
             using (HttpClient httpClient = new HttpClient())
             {
-                string subdbApiFileHash = FileHashUtil.GetSubdbFileHash(movieFilePath);
+                string subdbApiFileHash = FileUtil.GetSubdbFileHash(movieFilePath);
 
                 string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
 
@@ -93,25 +93,25 @@ namespace SubtitleDownloadCore
                 if (searchResponse.IsSuccessStatusCode)
                 {
                     string languagesFound = await searchResponse.Content.ReadAsStringAsync();
-                    await TryDownloadSubs(srtFilePath, httpClient, subdbApiFileHash, languagesFound);
+                    await TryDownloadSubsAsync(srtFilePath, httpClient, subdbApiFileHash, languagesFound);
                 }
-                else 
+                else
                 {
-                    Console.WriteLine($"Search failed. {searchResponse.StatusCode}");                    
+                    Console.WriteLine($"Search failed. {searchResponse.StatusCode}");
                 }
             }
         }
 
 
-        private static async Task TryDownloadSubs(string srtFilePath, HttpClient httpClient, string subdbApiFileHash, string languagesFound)
-        {   
+        private static async Task TryDownloadSubsAsync(string srtFilePath, HttpClient httpClient, string subdbApiFileHash, string languagesFound)
+        {
             if (!string.IsNullOrEmpty(languagesFound))
             {
                 Console.WriteLine("Subtitle(s) found (languages = " + languagesFound + ") !");
 
                 if (languagesFound.Contains(LANGUAGE_EN))
                 {
-                    Console.WriteLine($"Downloading '{LANGUAGE_EN}' ... ");                    
+                    Console.WriteLine($"Downloading '{LANGUAGE_EN}' ... ");
                     await DownloadSubtitleAsync(subdbApiFileHash, srtFilePath, httpClient, LANGUAGE_EN);
                 }
 
@@ -131,7 +131,7 @@ namespace SubtitleDownloadCore
 
         private static async Task DownloadSubtitleAsync(string subdbApiFileHash, string srtFilePath, HttpClient httpClient, string language)
         {
-            string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language="+language;
+            string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language=" + language;
             HttpResponseMessage downloadResponse = await httpClient.GetAsync(urlDownload);
 
             if (downloadResponse.IsSuccessStatusCode)
@@ -144,7 +144,7 @@ namespace SubtitleDownloadCore
                     subtitleFilePath = subtitleFilePath.Replace(".srt", "-pt.srt");
                 }
 
-                await WriteHttpContentToFile(httpContent, subtitleFilePath);
+                await FileUtil.WriteHttpContentToFileAsync(httpContent, subtitleFilePath);
 
                 Console.WriteLine("Subtitle downloaded -> " + subtitleFilePath);
             }
@@ -153,39 +153,11 @@ namespace SubtitleDownloadCore
                 Console.WriteLine("Failed to download. " + downloadResponse.StatusCode);
             }
         }
-        
-
-        private static Task WriteHttpContentToFile(HttpContent content, string srtFileName)
-        {
-            string subtitleFilePath = Path.GetFullPath(srtFileName);
-
-            if (File.Exists(subtitleFilePath))
-                File.Delete(subtitleFilePath);
-
-            FileStream fileStream = null;
-            try
-            {
-                fileStream = new FileStream(subtitleFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                return content.CopyToAsync(fileStream).ContinueWith(
-                    (copyTask) =>
-                    {
-                        fileStream.Close();
-                    });
-            }
-            catch
-            {
-                if (fileStream != null)
-                {
-                    fileStream.Close();
-                }
- 
-                throw;
-            }
-        }
-        
 
 
 
-        
+
+
+
     }
 }

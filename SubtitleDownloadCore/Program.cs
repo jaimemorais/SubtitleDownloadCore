@@ -108,6 +108,7 @@ namespace SubtitleDownloadCore
             if (!string.IsNullOrEmpty(languagesFound))
             {
                 Console.WriteLine("Subtitle(s) found (languages = " + languagesFound + ") !");
+                Console.WriteLine($"Will download only '{LANGUAGE_EN}' and '{LANGUAGE_PT}' ...");
 
                 if (languagesFound.Contains(LANGUAGE_EN))
                 {

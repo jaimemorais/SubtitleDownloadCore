@@ -3,13 +3,13 @@ Subtitle Downloader   /   C#  /   .Net Core  / xUnit
 
 ---
 
-### To Run 
+### How it works
 
 Execute:
 
 > dotnet SubtitleDownloadCore.dll [path-to-movies-directory]
 
 
-Then it will try to download the subtitles for all the movie files it finds in the subdirectories.
+Then it will try to download the subtitles (pt, en) for all the movie files it finds in the subdirectories.
 
 

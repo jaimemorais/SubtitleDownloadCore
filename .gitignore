@@ -12,3 +12,6 @@
 /SubtitleDownloadCore.Tests/obj
 /SubtitleDownloadCore/bin/Debug/netcoreapp2.0
 /.vs/SubtitleDownloadCore/v16
+/.vs/SubtitleDownloadCore/DesignTimeBuild/.dtbcache.v2
+/SubtitleDownloadCore/bin/Debug/netcoreapp3.1
+/SubtitleDownloadCore.Tests/bin/Debug/netcoreapp3.1

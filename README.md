@@ -3,9 +3,7 @@ Subtitle Downloader   /   C#  /   .Net Core  / xUnit
 
 ---
 
-### How it works
-
-Execute:
+### Usage
 
 > dotnet SubtitleDownloadCore.dll [path-to-movies-directory]
 

@@ -29,7 +29,7 @@ namespace SubtitleDownloadCore
             WriteLine("SubtitleDownloadCore starting...");
             WriteLine(string.Empty);
 
-            var movieFiles = GetMovieFiles(rootDir);
+            var movieFiles = GetMovieFiles(rootDir); 
 
             if (!movieFiles.Any())
             {

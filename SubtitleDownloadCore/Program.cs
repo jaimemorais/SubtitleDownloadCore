@@ -17,6 +17,7 @@ namespace SubtitleDownloadCore
 
         const string LANGUAGE_EN = "en";
         const string LANGUAGE_PT = "pt";
+        static readonly string[] FILE_EXTENSIONS = { ".avi", ".mpg", ".mp4", ".mkv" };
 
 
         public static async Task Main(string[] args)
@@ -36,8 +37,8 @@ namespace SubtitleDownloadCore
                 WriteLine("No movie files found.");
                 return;
             }
-                        
-            await DownloadSubtitlesAsync(movieFiles);            
+
+            await DownloadSubtitlesAsync(movieFiles);
 
             WriteLine(string.Empty);
             WriteLine("Finished!");
@@ -51,10 +52,9 @@ namespace SubtitleDownloadCore
 
             List<string> files = new List<string>();
 
-            string[] fileExtensions = { ".avi", ".mpg", ".mp4", ".mkv" };
 
             foreach (string file in Directory.EnumerateFiles(rootDir, "*.*", SearchOption.AllDirectories)
-                .Where(s => fileExtensions.Any(ext => ext == Path.GetExtension(s))))
+                .Where(s => FILE_EXTENSIONS.Any(ext => ext == Path.GetExtension(s))))
             {
                 files.Add(file);
             }

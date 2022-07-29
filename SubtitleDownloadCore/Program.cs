@@ -15,6 +15,7 @@ namespace SubtitleDownloadCore
     public static class Program
     {
 
+        public const string USER_AGENT = "SubtitleDownloadCore; http://github.com/jaimemorais/SubtitleDownloadCore";
         const string LANGUAGE_EN = "en";
         const string LANGUAGE_PT = "pt";
         static readonly string[] FILE_EXTENSIONS = { ".avi", ".mpg", ".mp4", ".mkv" };
@@ -30,7 +31,7 @@ namespace SubtitleDownloadCore
             WriteLine("SubtitleDownloadCore starting...");
             WriteLine(string.Empty);
 
-            var movieFiles = GetMovieFiles(rootDir); 
+            var movieFiles = GetMovieFiles(rootDir);
 
             if (!movieFiles.Any())
             {
@@ -103,7 +104,7 @@ namespace SubtitleDownloadCore
 
                 string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
 
-                httpClient.DefaultRequestHeaders.Add("User-Agent", "SubDB/1.0 (SubtitleDownloadCore/1.0; http://github.com/jaimemorais/SubtitleDownloadCore)");
+                httpClient.DefaultRequestHeaders.Add("User-Agent", USER_AGENT);
                 HttpResponseMessage searchResponse = await httpClient.GetAsync(urlSearch);
 
                 if (searchResponse.IsSuccessStatusCode)

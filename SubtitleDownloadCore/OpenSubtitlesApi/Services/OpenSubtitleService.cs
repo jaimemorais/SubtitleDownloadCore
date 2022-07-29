@@ -1,3 +1,4 @@
+using SubtitleDownloadCore;
 using SuppliersLibrary.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -14,13 +15,12 @@ namespace SuppliersLibrary.OpenSubtitles
     public class OpenSubtitleService
     {
         private readonly string baseRestUrl = "https://rest.opensubtitles.org/search";
-        private readonly string userAgentId = "SubLoad v1";
 
         public async Task<IList<ISubtitleResultItem>> SearchAsync(string path, object[] parameters = null)
         {
             using var client = new HttpClient { Timeout = new TimeSpan(0, 0, 0, 0, -1) };
             client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Add("X-User-Agent", userAgentId);
+            client.DefaultRequestHeaders.Add("X-User-Agent", Program.USER_AGENT);
 
             bool byHash = true, byName = false;
 

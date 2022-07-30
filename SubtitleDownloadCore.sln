@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+# Visual Studio Version 17
+VisualStudioVersion = 17.2.32505.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleDownloadCore", "SubtitleDownloadCore\SubtitleDownloadCore.csproj", "{EE51351A-0240-4D18-88F5-4437F86CD71F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SubtitleDownloadCore.Tests", "SubtitleDownloadCore.Tests\SubtitleDownloadCore.Tests.csproj", "{8B5F99EB-ECAC-42C6-93E6-1BC9DC098A5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SubtitleDownloadCore.Tests", "SubtitleDownloadCore.Tests\SubtitleDownloadCore.Tests.csproj", "{8B5F99EB-ECAC-42C6-93E6-1BC9DC098A5F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{86548608-64F4-4426-A047-34DA6FD4E081}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +26,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8B5F99EB-ECAC-42C6-93E6-1BC9DC098A5F} = {86548608-64F4-4426-A047-34DA6FD4E081}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CFD45A86-2634-4F5D-BE75-B5D37606B365}

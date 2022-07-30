@@ -21,6 +21,7 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
         }
 
 
+
         /* old implementation 
         private readonly string baseRestUrl = "https://rest.opensubtitles.org/search";
 

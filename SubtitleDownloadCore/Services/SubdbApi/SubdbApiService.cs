@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using static System.Console;
 
@@ -19,7 +22,7 @@ namespace SubtitleDownloadCore.Services.SubdbApi
 
             using (HttpClient httpClient = new HttpClient())
             {
-                string subdbApiFileHash = FileUtil.GetSubdbFileHash(movieFilePath);
+                string subdbApiFileHash = GetSubdbFileHash(movieFilePath);
 
                 string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
 
@@ -55,7 +58,7 @@ namespace SubtitleDownloadCore.Services.SubdbApi
 
                 if (!string.IsNullOrWhiteSpace(languagesFound))
                 {
-                    await TryDownloadSubsAsync(srtFilePath, FileUtil.GetSubdbFileHash(movieFilePath), languagesFound);
+                    await TryDownloadSubsAsync(srtFilePath, GetSubdbFileHash(movieFilePath), languagesFound);
                 }
                 else
                 {
@@ -104,7 +107,7 @@ namespace SubtitleDownloadCore.Services.SubdbApi
                     subtitleFilePath = subtitleFilePath.Replace(".srt", "-pt.srt");
                 }
 
-                await FileUtil.WriteHttpContentToFileAsync(httpContent, subtitleFilePath);
+                await WriteHttpContentToFileAsync(httpContent, subtitleFilePath);
 
                 WriteLine("Subtitle downloaded -> " + subtitleFilePath);
             }
@@ -113,6 +116,69 @@ namespace SubtitleDownloadCore.Services.SubdbApi
                 WriteLine("Failed to download. HTTP Status = " + downloadResponse.StatusCode);
             }
         }
+
+
+
+        private static readonly object fsLock = new object();
+
+        public static string GetSubdbFileHash(string filePath)
+        {
+            int bufferSize = 64 * 1024;
+            byte[] first64kb = new byte[bufferSize];
+            byte[] last64kb = new byte[bufferSize];
+
+            using (FileStream fs = new FileStream(filePath, FileMode.Open))
+            {
+                lock (fsLock)
+                {
+                    // first 64k
+                    fs.Seek(0, SeekOrigin.Begin);
+                    fs.Read(first64kb, 0, bufferSize);
+
+                    // last 64k
+                    fs.Seek(-bufferSize, SeekOrigin.End);
+                    fs.Read(last64kb, 0, bufferSize);
+                }
+            }
+
+            using (var md5 = MD5.Create())
+            {
+                byte[] concatBytes = first64kb.Concat(last64kb).ToArray();
+                var hash = md5.ComputeHash(concatBytes);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
+        }
+
+
+
+        private static Task WriteHttpContentToFileAsync(HttpContent content, string srtFileName)
+        {
+            string subtitleFilePath = Path.GetFullPath(srtFileName);
+
+            if (File.Exists(subtitleFilePath))
+                File.Delete(subtitleFilePath);
+
+            FileStream fileStream = null;
+            try
+            {
+                fileStream = new FileStream(subtitleFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
+                return content.CopyToAsync(fileStream).ContinueWith(
+                    (copyTask) =>
+                    {
+                        fileStream.Close();
+                    });
+            }
+            catch
+            {
+                if (fileStream != null)
+                {
+                    fileStream.Close();
+                }
+
+                throw;
+            }
+        }
+
 
     }
 }

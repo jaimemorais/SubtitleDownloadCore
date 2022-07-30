@@ -1,26 +1,34 @@
-using SubtitleDownloadCore;
-using SuppliersLibrary.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
-using System.Web;
 
-namespace SuppliersLibrary.OpenSubtitles
+namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
-    public class OpenSubtitleService
+
+    /// <summary>
+    /// https://opensubtitles.stoplight.io/docs/opensubtitles-api/b1eb44d4c8502-open-subtitles-api
+    /// </summary>
+    public class OpenSubtitlesApiService : ISubtitleService
     {
+        public Task<string> SearchSubtitleAsync(string movieFilePath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task DownloadSubtitlesAsync(List<string> movieFiles)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /* old implementation 
         private readonly string baseRestUrl = "https://rest.opensubtitles.org/search";
 
         public async Task<IList<ISubtitleResultItem>> SearchAsync(string path, object[] parameters = null)
         {
             using var client = new HttpClient { Timeout = new TimeSpan(0, 0, 0, 0, -1) };
             client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Add("X-User-Agent", Program.USER_AGENT);
+            client.DefaultRequestHeaders.Add("X-User-Agent", Constants.USER_AGENT);
 
             bool byHash = true, byName = false;
 
@@ -113,5 +121,7 @@ namespace SuppliersLibrary.OpenSubtitles
                 };
             }
         }
+
+        */
     }
 }

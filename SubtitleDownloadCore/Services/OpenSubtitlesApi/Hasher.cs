@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace SuppliersLibrary.OpenSubtitles
+namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
     public static class Hasher
     {
@@ -36,7 +36,7 @@ namespace SuppliersLibrary.OpenSubtitles
 
             long i = 0;
             var buffer = new byte[sizeof(long)];
-            while (i < 65536 / sizeof(long) && (input.Read(buffer, 0, sizeof(long)) > 0))
+            while (i < 65536 / sizeof(long) && input.Read(buffer, 0, sizeof(long)) > 0)
             {
                 i++;
                 lhash += BitConverter.ToInt64(buffer, 0);
@@ -44,7 +44,7 @@ namespace SuppliersLibrary.OpenSubtitles
 
             input.Position = Math.Max(0, streamsize - 65536);
             i = 0;
-            while (i < 65536 / sizeof(long) && (input.Read(buffer, 0, sizeof(long)) > 0))
+            while (i < 65536 / sizeof(long) && input.Read(buffer, 0, sizeof(long)) > 0)
             {
                 i++;
                 lhash += BitConverter.ToInt64(buffer, 0);

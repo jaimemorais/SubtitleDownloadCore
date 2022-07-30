@@ -1,4 +1,4 @@
-namespace SuppliersLibrary
+namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
     public interface ISubtitleResultItem
     {

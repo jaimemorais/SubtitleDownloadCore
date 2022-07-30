@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace SuppliersLibrary.Exceptions
+namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
     public class ServerFailException : Exception
     {

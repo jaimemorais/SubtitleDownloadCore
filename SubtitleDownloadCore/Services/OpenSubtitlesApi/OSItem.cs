@@ -3,7 +3,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 
-namespace SuppliersLibrary.OpenSubtitles
+namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
     public class OSItem : ISubtitleResultItem, IEquatable<OSItem>
     {

@@ -63,8 +63,7 @@ namespace SubtitleDownloadCore
                     string srtFilePath = Path.Combine(Path.GetDirectoryName(movieFilePath), Path.GetFileNameWithoutExtension(movieFilePath)) + ".srt";
                     if (System.IO.File.Exists(srtFilePath))
                     {
-                        WriteLine($"Subtitles already downloaded for {Path.GetFileNameWithoutExtension(movieFilePath)}." +
-                            $" Manually delete the .srt files to download again.");
+                        WriteLine($" -> Subtitles already downloaded for {Path.GetFileNameWithoutExtension(movieFilePath)}. Delete the .srt files to download again.".Pastel(Color.Yellow));
                         continue;
                     }
 
@@ -74,7 +73,7 @@ namespace SubtitleDownloadCore
                 }
                 catch (Exception ex)
                 {
-                    WriteLine($"Unexpected error : {ex.Message}");
+                    WriteLine($" -> Unexpected error : {ex.Message}".Pastel(Color.Tomato));
                 }
 
             }

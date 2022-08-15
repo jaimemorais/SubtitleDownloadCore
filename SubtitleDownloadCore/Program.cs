@@ -41,14 +41,13 @@ namespace SubtitleDownloadCore
 
             var movieFiles = GetMovieFiles(movieFilesDirectory);
 
-            if (movieFiles.Any())
-            {
-                await DownloadSubtitlesAsync(movieFiles);
-            }
-            else
+            if (!movieFiles.Any())
             {
                 WriteLine("No movie files found.".Pastel(Color.Tomato));
+                return;
             }
+
+            await DownloadSubtitlesAsync(movieFiles);
         }
 
         private static async Task DownloadSubtitlesAsync(List<string> movieFiles)
@@ -71,7 +70,7 @@ namespace SubtitleDownloadCore
 
                     var downloadedSubtitles = await _subtitleService.DownloadSubtitlesAsync(movieFilePath, srtFilePath);
 
-                    WriteResult(movieFilePath, downloadedSubtitles);
+                    WriteResult(downloadedSubtitles);
                 }
                 catch (Exception ex)
                 {
@@ -81,16 +80,15 @@ namespace SubtitleDownloadCore
             }
         }
 
-        private static void WriteResult(string movieFilePath, IList<string> downloadedSubtitles)
+        private static void WriteResult(IList<string> downloadedSubtitles)
         {
-            if (downloadedSubtitles.Any())
-            {
-                downloadedSubtitles.ToList<string>().ForEach(s => WriteLine($" -> {s}".Pastel(Color.Yellow)));
-            }
-            else
+            if (!downloadedSubtitles.Any())
             {
                 WriteLine($" -> No subtitles found   :( ".Pastel(Color.Yellow));
+                return;
             }
+
+            downloadedSubtitles.ToList<string>().ForEach(s => WriteLine($" -> {s}".Pastel(Color.Yellow)));
         }
 
         private static List<string> GetMovieFiles(string movieFilesDirectory) =>

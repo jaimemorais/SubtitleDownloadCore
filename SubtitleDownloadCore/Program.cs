@@ -1,6 +1,6 @@
 ﻿using Pastel;
 using SubtitleDownloadCore.Services;
-using SubtitleDownloadCore.Services.SubdbApi;
+using SubtitleDownloadCore.Services.OpenSubtitlesApi;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -15,7 +15,7 @@ namespace SubtitleDownloadCore
 
     public static class Program
     {
-        private static readonly ISubtitleService _subtitleService = new SubdbApiService();
+        private static readonly ISubtitleService _subtitleService = new OpenSubtitlesApiService();
 
         static readonly string[] MOVIEFILE_EXTENSIONS = { ".avi", ".mpg", ".mp4", ".mkv" };
 

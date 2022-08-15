@@ -1,5 +1,7 @@
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
@@ -10,6 +12,18 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
     /// </summary>
     public class OpenSubtitlesApiService : ISubtitleService
     {
+        private readonly string _apiKey;
+
+        public OpenSubtitlesApiService()
+        {
+            IConfiguration config = new ConfigurationBuilder()
+                .AddJsonFile("appSettings.json")
+                .AddUserSecrets(Assembly.GetExecutingAssembly())
+                .Build();
+
+            _apiKey = config["OpenSubtitlesApiKey"];
+        }
+
         public Task<string> SearchSubtitleAsync(string movieFilePath)
         {
             throw new NotImplementedException();

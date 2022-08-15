@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -16,7 +15,21 @@ namespace SubtitleDownloadCore.Services.SubdbApi
     public class SubdbApiService : ISubtitleService
     {
 
-        public async Task<string> SearchSubtitleAsync(string movieFilePath)
+        public async Task DownloadSubtitlesAsync(string movieFilePath, string srtFilePath)
+        {
+            string languagesFound = await SearchSubtitleAsync(movieFilePath);
+
+            if (!string.IsNullOrWhiteSpace(languagesFound))
+            {
+                await TryDownloadSubsAsync(srtFilePath, GetSubdbFileHash(movieFilePath), languagesFound);
+            }
+            else
+            {
+                WriteLine($"Subtitles for languages '{Constants.LANGUAGE_EN}','{Constants.LANGUAGE_PT}' not found :( ");
+            }
+        }
+
+        private async Task<string> SearchSubtitleAsync(string movieFilePath)
         {
             WriteLine($"Searching subtitle for {Path.GetFileNameWithoutExtension(movieFilePath)} , wait...");
 
@@ -41,32 +54,6 @@ namespace SubtitleDownloadCore.Services.SubdbApi
             }
         }
 
-        public async Task DownloadSubtitlesAsync(List<string> movieFiles)
-        {
-            foreach (var movieFilePath in movieFiles)
-            {
-                WriteLine(string.Empty);
-
-                string srtFilePath = Path.Combine(Path.GetDirectoryName(movieFilePath), Path.GetFileNameWithoutExtension(movieFilePath)) + ".srt";
-                if (File.Exists(srtFilePath))
-                {
-                    WriteLine($"Subtitles already downloaded for {Path.GetFileNameWithoutExtension(movieFilePath)}. Manually delete the .srt files to download again.");
-                    continue;
-                }
-
-                string languagesFound = await SearchSubtitleAsync(movieFilePath);
-
-                if (!string.IsNullOrWhiteSpace(languagesFound))
-                {
-                    await TryDownloadSubsAsync(srtFilePath, GetSubdbFileHash(movieFilePath), languagesFound);
-                }
-                else
-                {
-                    WriteLine($"Subtitles for languages '{Constants.LANGUAGE_EN}','{Constants.LANGUAGE_PT}' not found :( ");
-                }
-
-            }
-        }
 
 
         private static async Task TryDownloadSubsAsync(string srtFilePath, string subdbApiFileHash, string languagesFound)

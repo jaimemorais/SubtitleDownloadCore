@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace SubtitleDownloadCore.Services
 {
     public interface ISubtitleService
     {
-        Task<string> SearchSubtitleAsync(string movieFilePath);
 
-        Task DownloadSubtitlesAsync(List<string> movieFiles);
+        Task DownloadSubtitlesAsync(string movieFilePath, string srtFilePath);
 
     }
 }

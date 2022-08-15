@@ -11,7 +11,7 @@ namespace SubtitleDownloadCore.Tests
         [Fact]
         public void SubdbFileHash_Should_Be_Correct()
         {
-            var testFilePath = Path.GetTempFileName();
+            var testFilePath = Path.GetTempFileName(); 
             string testData = new string('a', 100000);
             File.WriteAllText(testFilePath, testData);
 

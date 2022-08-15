@@ -37,6 +37,7 @@ namespace SubtitleDownloadCore
         private static async Task ExecuteDownloadAsync(string movieFilesDirectory)
         {
             WriteLine("Movie files directory : ".Pastel(Color.Yellow) + $"{movieFilesDirectory}{Environment.NewLine}".Pastel(Color.AntiqueWhite));
+            WriteLine("Searching and downloading subtitles, wait ... ".Pastel(Color.Yellow));
 
             var movieFiles = GetMovieFiles(movieFilesDirectory);
 
@@ -54,14 +55,17 @@ namespace SubtitleDownloadCore
         {
             foreach (string movieFilePath in movieFiles)
             {
+                WriteLine(string.Empty);
+                WriteLine("_________________________________________________________________________");
+                WriteLine($"Movie file : ".Pastel(Color.Yellow) + movieFilePath);
+
                 try
                 {
-                    WriteLine(string.Empty);
-
                     string srtFilePath = Path.Combine(Path.GetDirectoryName(movieFilePath), Path.GetFileNameWithoutExtension(movieFilePath)) + ".srt";
                     if (System.IO.File.Exists(srtFilePath))
                     {
-                        WriteLine($"Subtitles already downloaded for {Path.GetFileNameWithoutExtension(movieFilePath)}. Manually delete the .srt files to download again.");
+                        WriteLine($"Subtitles already downloaded for {Path.GetFileNameWithoutExtension(movieFilePath)}." +
+                            $" Manually delete the .srt files to download again.");
                         continue;
                     }
 
@@ -81,12 +85,11 @@ namespace SubtitleDownloadCore
         {
             if (downloadedSubtitles.Any())
             {
-                WriteLine($"Subtitles downloaded for {movieFilePath} : ");
-                downloadedSubtitles.ToList<string>().ForEach(s => WriteLine(s));
+                downloadedSubtitles.ToList<string>().ForEach(s => WriteLine($" -> {s}".Pastel(Color.Yellow)));
             }
             else
             {
-                WriteLine($"Subtitles not found :( ");
+                WriteLine($" -> No subtitles found   :( ".Pastel(Color.Yellow));
             }
         }
 

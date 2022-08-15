@@ -1,8 +1,6 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Threading.Tasks;
 using static System.Console;
 
@@ -14,75 +12,75 @@ namespace SubtitleDownloadCore.Services.SubdbApi
     /// </summary>
     public class SubdbApiService : ISubtitleService
     {
+        private readonly HttpClient _httpClient;
 
-        public async Task DownloadSubtitlesAsync(string movieFilePath, string srtFilePath)
+        public SubdbApiService()
+        {
+            _httpClient = new HttpClient();
+
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.USER_AGENT);
+        }
+
+        public async Task<IList<string>> DownloadSubtitlesAsync(string movieFilePath, string srtFilePath)
         {
             string languagesFound = await SearchSubtitleAsync(movieFilePath);
 
             if (!string.IsNullOrWhiteSpace(languagesFound))
             {
-                await TryDownloadSubsAsync(srtFilePath, GetSubdbFileHash(movieFilePath), languagesFound);
+                return await TryDownloadSubsAsync(srtFilePath, SubDbFileUtils.GetSubdbFileHash(movieFilePath), languagesFound);
             }
-            else
-            {
-                WriteLine($"Subtitles for languages '{Constants.LANGUAGE_EN}','{Constants.LANGUAGE_PT}' not found :( ");
-            }
+
+            return new List<string>();
         }
 
         private async Task<string> SearchSubtitleAsync(string movieFilePath)
         {
             WriteLine($"Searching subtitle for {Path.GetFileNameWithoutExtension(movieFilePath)} , wait...");
 
-            using (HttpClient httpClient = new HttpClient())
+            string subdbApiFileHash = SubDbFileUtils.GetSubdbFileHash(movieFilePath);
+
+            string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
+
+            HttpResponseMessage searchResponse = await _httpClient.GetAsync(urlSearch);
+
+            if (searchResponse.IsSuccessStatusCode)
             {
-                string subdbApiFileHash = GetSubdbFileHash(movieFilePath);
-
-                string urlSearch = $"http://api.thesubdb.com/?action=search&hash={subdbApiFileHash}";
-
-                httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.USER_AGENT);
-                HttpResponseMessage searchResponse = await httpClient.GetAsync(urlSearch);
-
-                if (searchResponse.IsSuccessStatusCode)
-                {
-                    return await searchResponse.Content.ReadAsStringAsync();
-                }
-                else
-                {
-                    WriteLine($"Search failed. HTTP Status = {searchResponse.StatusCode}");
-                    return null;
-                }
+                return await searchResponse.Content.ReadAsStringAsync();
+            }
+            else
+            {
+                WriteLine($"Search failed. HTTP Status = {searchResponse.StatusCode}");
+                return null;
             }
         }
 
 
 
-        private static async Task TryDownloadSubsAsync(string srtFilePath, string subdbApiFileHash, string languagesFound)
+        private async Task<IList<string>> TryDownloadSubsAsync(string srtFilePath, string subdbApiFileHash, string languagesFound)
         {
-            using (HttpClient httpClient = new HttpClient())
+            IList<string> subs = new List<string>();
+
+            if (languagesFound.Contains(Constants.LANGUAGE_EN))
             {
-                WriteLine("Subtitle(s) found (languages = " + languagesFound + ") !");
-                WriteLine($"Will download only '{Constants.LANGUAGE_EN}' and '{Constants.LANGUAGE_PT}' ...");
-
-                if (languagesFound.Contains(Constants.LANGUAGE_EN))
-                {
-                    WriteLine($"Downloading '{Constants.LANGUAGE_EN}' ... ");
-                    await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, httpClient, Constants.LANGUAGE_EN);
-                }
-
-                if (languagesFound.Contains(Constants.LANGUAGE_PT))
-                {
-                    WriteLine($"Downloading '{Constants.LANGUAGE_PT}' ... ");
-                    await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, httpClient, Constants.LANGUAGE_PT);
-                }
+                WriteLine($"Downloading '{Constants.LANGUAGE_EN}' ... ");
+                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Constants.LANGUAGE_EN));
             }
+
+            if (languagesFound.Contains(Constants.LANGUAGE_PT))
+            {
+                WriteLine($"Downloading '{Constants.LANGUAGE_PT}' ... ");
+                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Constants.LANGUAGE_PT));
+            }
+
+            return subs;
         }
 
 
 
-        private static async Task DownloadSingleSubtitleAsync(string subdbApiFileHash, string srtFilePath, HttpClient httpClient, string language)
+        private async Task<string> DownloadSingleSubtitleAsync(string subdbApiFileHash, string srtFilePath, string language)
         {
             string urlDownload = $"http://api.thesubdb.com/?action=download&hash={subdbApiFileHash}&language=" + language;
-            HttpResponseMessage downloadResponse = await httpClient.GetAsync(urlDownload);
+            HttpResponseMessage downloadResponse = await _httpClient.GetAsync(urlDownload);
 
             if (downloadResponse.IsSuccessStatusCode)
             {
@@ -94,77 +92,17 @@ namespace SubtitleDownloadCore.Services.SubdbApi
                     subtitleFilePath = subtitleFilePath.Replace(".srt", "-pt.srt");
                 }
 
-                await WriteHttpContentToFileAsync(httpContent, subtitleFilePath);
+                await SubDbFileUtils.WriteHttpContentToFileAsync(httpContent, subtitleFilePath);
 
-                WriteLine("Subtitle downloaded -> " + subtitleFilePath);
+                return subtitleFilePath;
             }
             else
             {
-                WriteLine("Failed to download. HTTP Status = " + downloadResponse.StatusCode);
+                throw new SubtitleServiceException("Failed to download. HTTP Status = " + downloadResponse.StatusCode);
             }
         }
 
 
-
-        private static readonly object fsLock = new object();
-
-        public static string GetSubdbFileHash(string filePath)
-        {
-            int bufferSize = 64 * 1024;
-            byte[] first64kb = new byte[bufferSize];
-            byte[] last64kb = new byte[bufferSize];
-
-            using (FileStream fs = new FileStream(filePath, FileMode.Open))
-            {
-                lock (fsLock)
-                {
-                    // first 64k
-                    fs.Seek(0, SeekOrigin.Begin);
-                    fs.Read(first64kb, 0, bufferSize);
-
-                    // last 64k
-                    fs.Seek(-bufferSize, SeekOrigin.End);
-                    fs.Read(last64kb, 0, bufferSize);
-                }
-            }
-
-            using (var md5 = MD5.Create())
-            {
-                byte[] concatBytes = first64kb.Concat(last64kb).ToArray();
-                var hash = md5.ComputeHash(concatBytes);
-                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
-            }
-        }
-
-
-
-        private static Task WriteHttpContentToFileAsync(HttpContent content, string srtFileName)
-        {
-            string subtitleFilePath = Path.GetFullPath(srtFileName);
-
-            if (File.Exists(subtitleFilePath))
-                File.Delete(subtitleFilePath);
-
-            FileStream fileStream = null;
-            try
-            {
-                fileStream = new FileStream(subtitleFilePath, FileMode.Create, FileAccess.Write, FileShare.None);
-                return content.CopyToAsync(fileStream).ContinueWith(
-                    (copyTask) =>
-                    {
-                        fileStream.Close();
-                    });
-            }
-            catch
-            {
-                if (fileStream != null)
-                {
-                    fileStream.Close();
-                }
-
-                throw;
-            }
-        }
 
 
     }

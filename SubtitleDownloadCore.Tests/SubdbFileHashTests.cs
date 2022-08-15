@@ -17,7 +17,7 @@ namespace SubtitleDownloadCore.Tests
 
             const string EXPECTED_HASH = "81615449a98aaaad8dc179b3bec87f38";
 
-            string hash = SubdbApiService.GetSubdbFileHash(testFilePath);
+            string hash = SubDbFileUtils.GetSubdbFileHash(testFilePath);
 
             hash.Should().Be(EXPECTED_HASH);
 

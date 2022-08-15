@@ -65,13 +65,28 @@ namespace SubtitleDownloadCore
                         continue;
                     }
 
-                    await _subtitleService.DownloadSubtitlesAsync(movieFilePath, srtFilePath);
+                    var downloadedSubtitles = await _subtitleService.DownloadSubtitlesAsync(movieFilePath, srtFilePath);
+
+                    WriteResult(movieFilePath, downloadedSubtitles);
                 }
                 catch (Exception ex)
                 {
                     WriteLine($"Unexpected error : {ex.Message}");
                 }
 
+            }
+        }
+
+        private static void WriteResult(string movieFilePath, IList<string> downloadedSubtitles)
+        {
+            if (downloadedSubtitles.Any())
+            {
+                WriteLine($"Subtitles downloaded for {movieFilePath} : ");
+                downloadedSubtitles.ToList<string>().ForEach(s => WriteLine(s));
+            }
+            else
+            {
+                WriteLine($"Subtitles not found :( ");
             }
         }
 

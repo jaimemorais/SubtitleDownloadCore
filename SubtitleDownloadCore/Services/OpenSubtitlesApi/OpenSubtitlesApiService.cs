@@ -1,12 +1,10 @@
 using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Console;
 
 namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
@@ -16,12 +14,12 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
     /// </summary>
     public class OpenSubtitlesApiService : ISubtitleService
     {
-        private readonly string _apiKey;
         private const string USER_AGENT = "SubtitleDownloadCore";
 
         private const string BASE_API_URL = "https://api.opensubtitles.com/api/v1/";
         private const string SUBTITLES_ENDPOINT = "subtitles";
 
+        private readonly HttpClient _httpClient;
 
         public OpenSubtitlesApiService()
         {
@@ -30,50 +28,46 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
                 .AddUserSecrets(Assembly.GetExecutingAssembly())
                 .Build();
 
-            _apiKey = config["OpenSubtitlesApiKey"];
+            _httpClient = new HttpClient();
+            _httpClient.DefaultRequestHeaders.Add("Api-Key", config["OpenSubtitlesApiKey"]);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", USER_AGENT);
         }
 
-        public async Task<string> SearchSubtitleAsync(string movieFilePath)
+
+        public async Task DownloadSubtitlesAsync(string movieFilePath, string srtFilePath)
         {
-            using var httpClient = new HttpClient();
+            var movieFileHash = OpenSubtitlesFileHasher.ToHexadecimal(OpenSubtitlesFileHasher.ComputeMovieHash(movieFilePath));
 
-            httpClient.DefaultRequestHeaders.Add("Api-Key", _apiKey);
-            httpClient.DefaultRequestHeaders.Add("User-Agent", USER_AGENT);
+            OpenSubtitlesSearchResponseDto openSubtitlesSearchResponseDto = await SearchSubtitleAsync(movieFileHash);
 
-            var searchUrl = GetSearchUrl(movieFilePath);
-            var responseHash = await httpClient.GetAsync(searchUrl);
+            if (openSubtitlesSearchResponseDto.TotalCount > 0)
+            {
+                await TryDownloadSubsAsync(srtFilePath, movieFileHash, openSubtitlesSearchResponseDto);
+            }
+            else
+            {
+                WriteLine($"Subtitles for languages '{Constants.LANGUAGE_EN}','{Constants.LANGUAGE_PT}' not found :( ");
+            }
+        }
 
 
-            var responseHashBody = await responseHash.Content.ReadAsStringAsync();
-            var json = JsonSerializer.Deserialize<IList<OpenSubtitlesItem>>(responseHashBody).ToList();
+        private async Task<OpenSubtitlesSearchResponseDto> SearchSubtitleAsync(string movieFileHash)
+        {
+            var searchUrl = BASE_API_URL + SUBTITLES_ENDPOINT + "?moviehash=" + movieFileHash;
+            var response = await _httpClient.GetAsync(searchUrl);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return JsonSerializer.Deserialize<OpenSubtitlesSearchResponseDto>(await response.Content.ReadAsStringAsync());
+            }
+
+            throw new SubtitleServiceException($"Error searching via OpenSubtitles (http {(int)response.StatusCode})");
+        }
 
 
+        private Task TryDownloadSubsAsync(string srtFilePath, string movieFileHash, OpenSubtitlesSearchResponseDto openSubtitlesSearchResponseDto)
+        {
             throw new NotImplementedException();
-        }
-
-        public async Task DownloadSubtitlesAsync(List<string> movieFiles)
-        {
-
-            foreach (string movieFile in movieFiles)
-            {
-                await SearchSubtitleAsync(movieFile);
-            }
-
-        }
-
-
-        private string GetSearchUrl(string movieFilePath)
-        {
-            var moviehash = OpenSubtitlesFileHasher.ToHexadecimal(OpenSubtitlesFileHasher.ComputeMovieFileHash(movieFilePath));
-            var file = new FileInfo(movieFilePath);
-            var movieByteSize = file.Length;
-
-            if (movieByteSize <= 0)
-            {
-                throw new Exception("Selected file is empty.");
-            }
-
-            return BASE_API_URL + SUBTITLES_ENDPOINT + "/moviehash=" + moviehash;
         }
 
     }

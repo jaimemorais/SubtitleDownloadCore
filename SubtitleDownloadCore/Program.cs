@@ -42,7 +42,7 @@ namespace SubtitleDownloadCore
 
             if (movieFiles.Any())
             {
-                await _subtitleService.DownloadSubtitlesAsync(movieFiles);
+                await DownloadSubtitlesAsync(movieFiles);
             }
             else
             {
@@ -50,7 +50,30 @@ namespace SubtitleDownloadCore
             }
         }
 
+        private static async Task DownloadSubtitlesAsync(List<string> movieFiles)
+        {
+            foreach (string movieFilePath in movieFiles)
+            {
+                try
+                {
+                    WriteLine(string.Empty);
 
+                    string srtFilePath = Path.Combine(Path.GetDirectoryName(movieFilePath), Path.GetFileNameWithoutExtension(movieFilePath)) + ".srt";
+                    if (System.IO.File.Exists(srtFilePath))
+                    {
+                        WriteLine($"Subtitles already downloaded for {Path.GetFileNameWithoutExtension(movieFilePath)}. Manually delete the .srt files to download again.");
+                        continue;
+                    }
+
+                    await _subtitleService.DownloadSubtitlesAsync(movieFilePath, srtFilePath);
+                }
+                catch (Exception ex)
+                {
+                    WriteLine($"Unexpected error : {ex.Message}");
+                }
+
+            }
+        }
 
         private static List<string> GetMovieFiles(string movieFilesDirectory) =>
             Directory.EnumerateFiles(movieFilesDirectory, "*.*", SearchOption.AllDirectories)

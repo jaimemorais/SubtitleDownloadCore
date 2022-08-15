@@ -4,32 +4,12 @@ using System.Text;
 
 namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
-    public static class Hasher
+    public static class OpenSubtitlesFileHasher
     {
-        public static byte[] ComputeMovieHash(string filename)
+        public static byte[] ComputeMovieFileHash(string movieFilePath)
         {
-            byte[] result;
-            using (Stream input = File.OpenRead(filename))
-            {
-                result = ComputeMovieHash(input);
-            }
+            using Stream input = File.OpenRead(movieFilePath);
 
-            return result;
-        }
-
-        public static string ToHexadecimal(byte[] bytes)
-        {
-            var hexBuilder = new StringBuilder();
-            for (var i = 0; i < bytes.Length; i++)
-            {
-                hexBuilder.Append(bytes[i].ToString("x2"));
-            }
-
-            return hexBuilder.ToString();
-        }
-
-        private static byte[] ComputeMovieHash(Stream input)
-        {
             long lhash, streamsize;
             streamsize = input.Length;
             lhash = streamsize;
@@ -55,5 +35,17 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
             Array.Reverse(result);
             return result;
         }
+
+        public static string ToHexadecimal(byte[] bytes)
+        {
+            var hexBuilder = new StringBuilder();
+            for (var i = 0; i < bytes.Length; i++)
+            {
+                hexBuilder.Append(bytes[i].ToString("x2"));
+            }
+
+            return hexBuilder.ToString();
+        }
+
     }
 }

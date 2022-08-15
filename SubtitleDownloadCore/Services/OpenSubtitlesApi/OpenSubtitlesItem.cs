@@ -1,11 +1,6 @@
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Net;
-
 namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 {
-    public class OSItem : ISubtitleResultItem, IEquatable<OSItem>
+    public class OpenSubtitlesItem
     {
         public string IDSubMovieFile { get; set; }
 
@@ -41,29 +36,13 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 
         public string SubtitlesLink { get; set; }
 
-        public string Language => LanguageName;
+        public string Language { get; set; }
 
-        public string Name => SubFileName;
+        public string Name { get; set; }
 
-        public string Format => SubFormat;
+        public string Format { get; set; }
 
-        public string LanguageID => SubLanguageID;
+        public string LanguageID { get; set; }
 
-        public void Download(string savePath)
-        {
-            using var client = new WebClient();
-            using var compressedStream = new MemoryStream(client.DownloadData(SubDownloadLink));
-            using var zipStream = new GZipStream(compressedStream, CompressionMode.Decompress);
-            using var uncompressed = new MemoryStream();
-
-            zipStream.CopyToAsync(uncompressed);
-
-            File.WriteAllBytes(savePath, uncompressed.ToArray());
-        }
-
-        public bool Equals(OSItem other)
-        {
-            return SubHash == other.SubHash;
-        }
     }
 }

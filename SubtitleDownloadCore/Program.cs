@@ -20,7 +20,6 @@ namespace SubtitleDownloadCore
         static readonly string[] MOVIEFILE_EXTENSIONS = { ".avi", ".mpg", ".mp4", ".mkv" };
 
 
-
         public static async Task Main(string[] args)
         {
             WriteLine($"{Environment.NewLine}SubtitleDownloadCore starting...{Environment.NewLine}".Pastel(Color.Yellow));
@@ -31,7 +30,6 @@ namespace SubtitleDownloadCore
 
             WriteLine($"{Environment.NewLine}Finished!".Pastel(Color.Yellow));
         }
-
 
 
         private static async Task ExecuteDownloadAsync(string movieFilesDirectory)
@@ -49,6 +47,14 @@ namespace SubtitleDownloadCore
 
             await DownloadSubtitlesAsync(movieFiles);
         }
+
+
+        private static List<string> GetMovieFiles(string movieFilesDirectory) =>
+            Directory.EnumerateFiles(movieFilesDirectory, "*.*", SearchOption.AllDirectories)
+                .Where(s => MOVIEFILE_EXTENSIONS.Any(ext => ext == Path.GetExtension(s)))
+                .ToList();
+
+
 
         private static async Task DownloadSubtitlesAsync(List<string> movieFiles)
         {
@@ -75,7 +81,6 @@ namespace SubtitleDownloadCore
                 {
                     WriteLine($" -> Unexpected error : {ex.Message}".Pastel(Color.Tomato));
                 }
-
             }
         }
 
@@ -89,11 +94,6 @@ namespace SubtitleDownloadCore
 
             downloadedSubtitles.ToList<string>().ForEach(s => WriteLine($" -> {s}".Pastel(Color.Yellow)));
         }
-
-        private static List<string> GetMovieFiles(string movieFilesDirectory) =>
-            Directory.EnumerateFiles(movieFilesDirectory, "*.*", SearchOption.AllDirectories)
-                .Where(s => MOVIEFILE_EXTENSIONS.Any(ext => ext == Path.GetExtension(s)))
-                .ToList();
 
 
     }

@@ -18,7 +18,7 @@ namespace SubtitleDownloadCore.Services.SubdbApi
         {
             _httpClient = new HttpClient();
 
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.USER_AGENT);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", Program.USER_AGENT);
         }
 
         public async Task<IList<string>> DownloadSubtitlesAsync(string movieFilePath, string srtFilePath)
@@ -60,16 +60,16 @@ namespace SubtitleDownloadCore.Services.SubdbApi
         {
             IList<string> subs = new List<string>();
 
-            if (languagesFound.Contains(Constants.LANGUAGE_EN))
+            if (languagesFound.Contains(Program.LANGUAGE_EN))
             {
-                WriteLine($"Downloading '{Constants.LANGUAGE_EN}' ... ");
-                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Constants.LANGUAGE_EN));
+                WriteLine($"Downloading '{Program.LANGUAGE_EN}' ... ");
+                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Program.LANGUAGE_EN));
             }
 
-            if (languagesFound.Contains(Constants.LANGUAGE_PT))
+            if (languagesFound.Contains(Program.LANGUAGE_PT))
             {
-                WriteLine($"Downloading '{Constants.LANGUAGE_PT}' ... ");
-                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Constants.LANGUAGE_PT));
+                WriteLine($"Downloading '{Program.LANGUAGE_PT}' ... ");
+                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Program.LANGUAGE_PT));
             }
 
             return subs;
@@ -87,7 +87,7 @@ namespace SubtitleDownloadCore.Services.SubdbApi
                 HttpContent httpContent = downloadResponse.Content;
                 var subtitleFilePath = srtFilePath;
 
-                if (language.Equals(Constants.LANGUAGE_PT) && File.Exists(subtitleFilePath))
+                if (language.Equals(Program.LANGUAGE_PT) && File.Exists(subtitleFilePath))
                 {
                     subtitleFilePath = subtitleFilePath.Replace(".srt", "-pt.srt");
                 }

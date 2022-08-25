@@ -27,7 +27,7 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
 
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Add("Api-Key", config["OpenSubtitlesApiKey"]);
-            _httpClient.DefaultRequestHeaders.Add("User-Agent", Constants.USER_AGENT);
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", Program.USER_AGENT);
         }
 
 
@@ -67,7 +67,7 @@ namespace SubtitleDownloadCore.Services.OpenSubtitlesApi
             foreach (var item in openSubtitlesSearchResponseDto.Data)
             {
                 var language = item.Attributes.Language;
-                if (language.Equals(Constants.LANGUAGE_PT) || language.Equals(Constants.LANGUAGE_EN))
+                if (language.Equals(Program.LANGUAGE_PT) || language.Equals(Program.LANGUAGE_EN))
                 {
                     subs.Add(await DownloadSingleSubtitleAsync(item.Attributes.Url, srtFilePath, language));
                 }

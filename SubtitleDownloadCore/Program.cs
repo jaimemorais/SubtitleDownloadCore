@@ -15,6 +15,10 @@ namespace SubtitleDownloadCore
 
     public static class Program
     {
+        public const string USER_AGENT = "SubtitleDownloadCore";
+        public const string LANGUAGE_EN = "en";
+        public const string LANGUAGE_PT = "pt";
+
         private static readonly string[] MOVIEFILE_EXTENSIONS_TO_SEARCH = { "avi", "mpg", "mp4", "mkv" };
 
         private static readonly ISubtitleService _subtitleService = new OpenSubtitlesApiService();

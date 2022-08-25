@@ -1,5 +1,6 @@
 # SubtitleDownloadCore
-Subtitle Downloader   /   C#  /   .Net Core  / xUnit
+
+Subtitle Downloader / C# / .Net 6 / xUnit
 
 ---
 
@@ -25,11 +26,11 @@ To setup one :
 
     3.1 Standalone use 
 
-    > Set the API-Key in the appsettings.json
+    > Set the API-Key in the appsettings.json and run the project 
 
-    3.2 Development use (recommended)
+    3.2 Development use
 
-    > Setup the API-Key using dotnet user-secrets
+    > Setup the API-Key using dotnet user-secrets  (recommended)
 
     ```
     dotnet user-secrets init

@@ -56,20 +56,20 @@ namespace SubtitleDownloadCore.Services.SubdbApi
 
 
 
-        private async Task<IList<string>> TryDownloadSubsAsync(string srtFilePath, string subdbApiFileHash, string languagesFound)
+        private async Task<IList<string>> TryDownloadSubsAsync(string srtDownloadPath, string subdbApiFileHash, string languagesFound)
         {
             IList<string> subs = new List<string>();
 
             if (languagesFound.Contains(Program.LANGUAGE_EN))
             {
                 WriteLine($"Downloading '{Program.LANGUAGE_EN}' ... ");
-                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Program.LANGUAGE_EN));
+                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtDownloadPath, Program.LANGUAGE_EN));
             }
 
             if (languagesFound.Contains(Program.LANGUAGE_PT))
             {
                 WriteLine($"Downloading '{Program.LANGUAGE_PT}' ... ");
-                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtFilePath, Program.LANGUAGE_PT));
+                subs.Add(await DownloadSingleSubtitleAsync(subdbApiFileHash, srtDownloadPath, Program.LANGUAGE_PT));
             }
 
             return subs;

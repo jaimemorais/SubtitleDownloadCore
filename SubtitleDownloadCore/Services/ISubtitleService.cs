@@ -11,7 +11,7 @@ namespace SubtitleDownloadCore.Services
         /// <param name="movieFilePath">The movie file path</param>
         /// <param name="srtFilePath">The subtitle (.srt) file path</param>
         /// <returns>A list containing the path of the downloaded subtitles</returns>
-        Task<IList<string>> DownloadSubtitlesAsync(string movieFilePath, string srtFilePath);
+        Task<IList<string>> DownloadSubtitlesAsync(string movieFilePath, string srtDownloadPath);
 
     }
 }

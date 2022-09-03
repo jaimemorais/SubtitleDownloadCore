@@ -19,7 +19,7 @@ namespace SubtitleDownloadCore
         public const string LANGUAGE_EN = "en";
         public const string LANGUAGE_PT = "pt";
 
-        private static readonly string[] MOVIEFILE_EXTENSIONS_TO_SEARCH = { "avi", "mpg", "mp4", "mkv" };
+        private static readonly string[] MOVIEFILE_EXTENSIONS_TO_SEARCH = { "*.avi", "*.mpg", "*.mp4", "*.mkv" };
 
         private static readonly ISubtitleService _subtitleService = new OpenSubtitlesApiService();
 
@@ -32,29 +32,24 @@ namespace SubtitleDownloadCore
 
             string movieFilesDirectory = (args.Any() && !string.IsNullOrEmpty(args[0])) ? args[0] : Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
-            await ExecuteDownloadAsync(movieFilesDirectory);
-
-            WriteLine(string.Empty);
-            WriteLine($"Finished!".Pastel(Color.Yellow));
-        }
-
-
-        private static async Task ExecuteDownloadAsync(string movieFilesDirectory)
-        {
             WriteLine("Movie files directory : ".Pastel(Color.Yellow) + $"{movieFilesDirectory}".Pastel(Color.AntiqueWhite));
 
-            var extensionsToSearch = string.Join(",", MOVIEFILE_EXTENSIONS_TO_SEARCH.Select(c => c));
-            var movieFilesFound = Directory.EnumerateFiles(movieFilesDirectory, "*.*", SearchOption.AllDirectories).Where(x => extensionsToSearch.Any(x.EndsWith));
+
+            var movieFilesFound = MOVIEFILE_EXTENSIONS_TO_SEARCH
+                .AsParallel()
+                .SelectMany(extension => Directory.EnumerateFiles(movieFilesDirectory, extension, SearchOption.AllDirectories));
+
+            WriteLine(movieFilesFound.Any() ?
+                $"{Environment.NewLine}Searching and downloading subtitles, wait ... ".Pastel(Color.Yellow) :
+                $" -> No movie files found in the directory.".Pastel(Color.OrangeRed));
 
             if (movieFilesFound.Any())
             {
-                WriteLine($"{Environment.NewLine}Searching and downloading subtitles, wait ... ".Pastel(Color.Yellow));
                 await DownloadSubtitlesAsync(movieFilesFound);
             }
-            else
-            {
-                WriteLine($" -> No movie files found ({extensionsToSearch}) in the directory.".Pastel(Color.OrangeRed));
-            }
+
+            WriteLine(string.Empty);
+            WriteLine($"Finished!".Pastel(Color.Yellow));
         }
 
 
@@ -77,24 +72,20 @@ namespace SubtitleDownloadCore
 
                     var downloadedSubtitles = await _subtitleService.DownloadSubtitlesAsync(movieFilePath, srtFilePath);
 
-                    WriteDownloadResult(downloadedSubtitles);
+                    if (downloadedSubtitles.Any())
+                    {
+                        downloadedSubtitles.ToList().ForEach(subtitleFile => WriteLine($" -> {subtitleFile}".Pastel(Color.Yellow)));
+                    }
+                    else
+                    {
+                        WriteLine($" -> No subtitles found   :( ".Pastel(Color.OrangeRed));
+                    }
                 }
                 catch (Exception ex)
                 {
                     WriteLine($" -> Unexpected error : {ex.Message}".Pastel(Color.OrangeRed));
                 }
             }
-        }
-
-        private static void WriteDownloadResult(IList<string> downloadedSubtitles)
-        {
-            if (!downloadedSubtitles.Any())
-            {
-                WriteLine($" -> No subtitles found   :( ".Pastel(Color.OrangeRed));
-                return;
-            }
-
-            downloadedSubtitles.ToList<string>().ForEach(subtitleFile => WriteLine($" -> {subtitleFile}".Pastel(Color.Yellow)));
         }
 
 
